@@ -105,8 +105,14 @@ module GemPlugin
     # To prevent this load requires the full path to the "init.rb" file, which
     # avoids the RubyGems autorequire magic.
     def load(needs = {})
-      sdir = File.join(Gem.dir, "specifications")
-      gems = Gem::SourceIndex.from_installed_gems(sdir)
+      begin
+        require 'bundler'
+        sdir = File.join(Bundler.bundle_path.to_s, "specifications")
+        gems = Gem::SourceIndex.from_installed_gems(sdir)
+      rescue LoadError
+        sdir = File.join(Gem.dir, "specifications")
+        gems = Gem::SourceIndex.from_installed_gems(sdir)
+      end
       needs = needs.merge({"gem_plugin" => INCLUDE})
       
       gems.each do |path, gem|
